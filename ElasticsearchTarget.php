@@ -146,8 +146,18 @@ class ElasticsearchTarget extends Target
             $result['trace'] = $message[4];
         }
 
-        if (is_string($text)) {
+        if ($text instanceof \Exception) {
+            $result['message'] = $text->getMessage();
+            $result['file'] = $text->getFile();
+            $result['line'] = $text->getLine();
+            $result['trace'] = $text->getTrace();
+            $result['category'] = 'Exception';
+        } elseif (is_string($text)) {
             $result['message'] = $text;
+            if (!empty($result['trace'])) {
+                $result['file'] = $result['trace'][0]['file'];
+                $result['line'] = $result['trace'][0]['line'];
+            }
         } else {
             $result['message'] = VarDumper::export($text);
         }
