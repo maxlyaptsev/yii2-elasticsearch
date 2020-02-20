@@ -150,7 +150,7 @@ class ElasticsearchTarget extends Target
             $result['message'] = $text->getMessage();
             $result['file'] = $text->getFile();
             $result['line'] = $text->getLine();
-            $result['trace'] = $text->getTrace();
+            $result['trace'] = $text->getTraceAsString();
             $result['category'] = 'Exception';
         } elseif (is_string($text)) {
             $result['message'] = $text;
