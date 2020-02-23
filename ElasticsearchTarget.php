@@ -15,6 +15,7 @@ use yii\helpers\Json;
 use yii\helpers\VarDumper;
 use yii\log\Logger;
 use yii\log\Target;
+use yii\web\HttpException;
 
 /**
  * ElasticsearchTarget stores log messages in a elasticsearch index.
@@ -150,8 +151,23 @@ class ElasticsearchTarget extends Target
             $result['message'] = $text->getMessage();
             $result['file'] = $text->getFile();
             $result['line'] = $text->getLine();
-            $result['trace'] = $text->getTraceAsString();
-            $result['category'] = 'Exception';
+            $result['category'] = get_class($text);
+
+            if ($traces = $text->getTrace()) {
+                foreach ($traces as $trace) {
+                    unset($trace['object'], $trace['args']);
+                    $result['trace'][] = $trace;
+                }
+            }
+
+            if ($text instanceof HttpException) {
+                $result['code'] = $text->statusCode;
+            } elseif ($text instanceof \ErrorException) {
+                $result['code'] = $text->getSeverity();
+            } else {
+                $result['code'] = $text->getCode();
+            }
+
         } elseif (is_string($text)) {
             $result['message'] = $text;
             if (!empty($result['trace'])) {
